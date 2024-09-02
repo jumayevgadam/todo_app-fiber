@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/jumayevgadam/todo_app-fiber/internal/config"
 	"github.com/jumayevgadam/todo_app-fiber/internal/connection"
 )
@@ -31,6 +32,12 @@ func main() {
 			}
 		}
 	}()
+	app := fiber.New()
+	app.Get("/post", func(c *fiber.Ctx) error {
+		return c.SendString("Hello EveryOne")
+	})
+
+	app.Listen(":8080")
 
 	// Handle SIGINT and SIGTERM for graceful shutdown
 	sigChan := make(chan os.Signal, 1)

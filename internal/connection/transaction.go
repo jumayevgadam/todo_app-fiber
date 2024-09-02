@@ -18,7 +18,6 @@ type TxOps interface {
 // Transaction is
 type Transaction struct {
 	Tx *sqlx.Tx
-	db Database //nolint:unused // Ignore unused field warning for db
 }
 
 // Query is
@@ -34,11 +33,6 @@ func (tx *Transaction) Get(ctx context.Context, dest interface{}, query string, 
 // QueryRow is
 func (tx *Transaction) QueryRow(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	return tx.Tx.QueryRowContext(ctx, query, args...)
-}
-
-// QueryContext is
-func (tx *Transaction) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	return tx.QueryContext(ctx, query, args...)
 }
 
 // Select is

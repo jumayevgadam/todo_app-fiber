@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/jumayevgadam/todo_app-fiber/internal/config"
@@ -18,7 +21,7 @@ type DB interface {
 	QueryRow(ctx context.Context, query string, args ...interface{}) *sql.Row
 	Query(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	Execute(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 }
 
 // DBops is
@@ -34,19 +37,25 @@ type Database struct {
 }
 
 // GenerateDsn is
-func GenerateDsn(cfgs config.MySQL) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-		cfgs.User,
-		cfgs.Password,
-		cfgs.Host,
-		cfgs.Port,
-		cfgs.DBName,
-	)
-}
+// func GenerateDsn(cfgs config.MySQL) string {
+// 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+// 		cfgs.User,
+// 		cfgs.Password,
+// 		cfgs.Host,
+// 		cfgs.Port,
+// 		cfgs.DBName,
+// 	)
+// }
 
 // NewDBConnection is
 func NewDBConnection(_ context.Context, cfgs config.MySQL) (*Database, error) {
-	db, err := sqlx.Connect("mysql", GenerateDsn(cfgs))
+	db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_NAME"),
+	))
 	if err != nil {
 		return nil, fmt.Errorf("db.Connect: %w", err)
 	}
@@ -95,5 +104,6 @@ func (d *Database) Begin(ctx context.Context, opts *sql.TxOptions) (TxOps, error
 
 // Close is
 func (d *Database) Close() error {
-	return d.db.Close()
+	d.db.Close()
+	return nil
 }

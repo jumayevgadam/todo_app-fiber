@@ -15,7 +15,7 @@ type Config struct {
 		HTTPPort string `env:"HTTP_PORT"`
 		// MetricsPort string `env:"METRICS_PORT"`
 	}
-	MySQL MySQL
+	MySQL MySQL	`env:""`
 }
 
 // MySQL is

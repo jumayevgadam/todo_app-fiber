@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // import mysql driver
 
 	"github.com/jmoiron/sqlx"
 	"github.com/jumayevgadam/todo_app-fiber/internal/config"
@@ -35,17 +35,6 @@ type DBops interface {
 type Database struct {
 	db *sqlx.DB
 }
-
-// GenerateDsn is
-// func GenerateDsn(cfgs config.MySQL) string {
-// 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-// 		cfgs.User,
-// 		cfgs.Password,
-// 		cfgs.Host,
-// 		cfgs.Port,
-// 		cfgs.DBName,
-// 	)
-// }
 
 // NewDBConnection is
 func NewDBConnection(_ context.Context, cfgs config.MySQL) (*Database, error) {
@@ -90,20 +79,20 @@ func (d *Database) Select(ctx context.Context, dest interface{}, query string, a
 
 // Execute is
 func (d *Database) Execute(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	return d.db.ExecContext(ctx, query, args...)
+	return d.db.ExecContext(context.Background(), query, args...)
 }
 
 // Begin is
 func (d *Database) Begin(ctx context.Context, opts *sql.TxOptions) (TxOps, error) {
-	t, err := d.db.BeginTxx(ctx, opts)
+	tx, err := d.db.BeginTxx(ctx, opts)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connection.Database.begin: %v", err.Error())
 	}
-	return &Transaction{Tx: t}, nil
+
+	return &Transaction{Tx: tx}, nil
 }
 
 // Close is
 func (d *Database) Close() error {
-	d.db.Close()
-	return nil
+	return d.db.Close()
 }

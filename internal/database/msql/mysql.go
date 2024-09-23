@@ -3,6 +3,7 @@ package msql
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/jumayevgadam/todo_app-fiber/internal/connection"
@@ -36,7 +37,7 @@ func (d *DataStore) UsersRepo() users.Repository {
 	return d.user
 }
 
-func (d *DataStore) WithTransaction(ctx context.Context, tx database.Transaction) error {
+func (d *DataStore) WithTransaction(ctx context.Context, transactionFn database.Transaction) (err error) {
 	db, ok := d.db.(connection.DBops)
 	if !ok {
 		return fmt.Errorf("got error start of transaction")
@@ -50,8 +51,19 @@ func (d *DataStore) WithTransaction(ctx context.Context, tx database.Transaction
 	defer func() {
 		if err != nil {
 			if err = tx.Rollback(); err != nil {
-
+				log.Printf("[mysql][WithTransaction] failed to rollback transaction: %v", err)
 			}
 		}
 	}()
+
+	transactionalDB := &DataStore{db: tx}
+	if err := transactionFn(transactionalDB); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

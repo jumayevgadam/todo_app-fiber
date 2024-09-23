@@ -11,6 +11,6 @@ type Transaction func(db DataStore) error
 
 // DataStore is
 type DataStore interface {
-	WithTransaction(ctx context.Context, tx Transaction) error
+	WithTransaction(ctx context.Context, transaction Transaction) error
 	UsersRepo() users.Repository
 }

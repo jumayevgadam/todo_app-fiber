@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jumayevgadam/todo_app-fiber/internal/database"
 	userModel "github.com/jumayevgadam/todo_app-fiber/internal/models/users"
+	"github.com/jumayevgadam/todo_app-fiber/pkg/errlist"
 )
 
 // UserService struct is
@@ -28,12 +28,12 @@ func (us *UserService) SignUp(ctx context.Context, reqDTO *userModel.SignUpReq) 
 	if err := us.repo.WithTransaction(ctx, func(db database.DataStore) error {
 		userID, err = db.UsersRepo().SignUp(ctx, reqDTO.ToStorage())
 		if err != nil {
-			return fmt.Errorf("[db.UsersRepo][SignUp]: %w", err)
+			return errlist.ParseErrors(err)
 		}
 
 		return nil
 	}); err != nil {
-		return -1, fmt.Errorf("[userService][SignUP]: %w", err)
+		return -1, errlist.ParseErrors(err)
 	}
 
 	return userID, nil

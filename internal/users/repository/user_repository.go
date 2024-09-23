@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jumayevgadam/todo_app-fiber/internal/connection"
 	userModel "github.com/jumayevgadam/todo_app-fiber/internal/models/users"
+	"github.com/jumayevgadam/todo_app-fiber/pkg/errlist"
 )
 
 // UserRepository struct is
@@ -30,7 +30,7 @@ func (ur *UserRepository) SignUp(ctx context.Context, resDAO *userModel.SignUpRe
 		resDAO.Password,
 	).Scan(&userID)
 	if err != nil {
-		return -1, fmt.Errorf("error in repo: %w", err)
+		return -1, errlist.ParseSqlErrors(err)
 	}
 
 	return userID, nil
